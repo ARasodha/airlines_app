@@ -4,8 +4,6 @@ import RouteTable from './components/RouteTable'
 import Select from './components/Select'
 import Map from './components/Map'
 import DATA from './data'
-import { Button } from 'react-bootstrap'
-
 
 const App = () => {
   const [airline, setAirline] = useState('all')
@@ -23,12 +21,10 @@ const App = () => {
     if (value !== 'all') {
       value = parseInt(value, 10)
     }
-    console.log('airlineselcted:', value)
     setAirline(value)
   }
 
   const airportSelected = (value) => {
-    console.log('airportselcted:', value)
     setAirport(value)
   }
 
@@ -93,9 +89,9 @@ const App = () => {
           value={airport}
           onSelect={airportSelected}
         />
-        <Button onClick={clearFilters} disabled={defaultSelected} size="sm" variant="outline-secondary">
+        <button onClick={clearFilters} disabled={defaultSelected} size="sm" variant="outline-secondary">
           Show All Routes
-        </Button>
+        </button>
       </p>
 
     </section>

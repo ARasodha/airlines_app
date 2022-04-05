@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Table, Button } from 'react-bootstrap'
 
 const RouteTable = ({
   columns = [{ name: "header", property: "value" }],
@@ -36,29 +35,29 @@ const RouteTable = ({
  
   return (
     <div>
-      <Table striped className={className}>
+      <table className={className}>
         <thead>
           <tr>{headerCells}</tr>
         </thead> 
         <tbody>{bodyRows}</tbody>
-      </Table>
+      </table>
       <div className="nav">
         <p>Showing {start + 1}-{start + bodyRows.length} of {rows.length} routes</p>
         <p>
-          <Button 
+          <button 
             variant="outline-secondary" 
             disabled={page === 0} 
             size="sm" 
             onClick={previousPage}>
             Previous Page
-          </Button>
-          <Button 
+          </button>
+          <button 
             variant="outline-secondary" 
             disabled={start + perPage >= rows.length} 
             size="sm" 
             onClick={nextPage}>
             Next Page
-          </Button>
+          </button>
         </p>
       </div>
     </div>
