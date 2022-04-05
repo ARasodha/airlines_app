@@ -1,57 +1,67 @@
 import React, { useState } from 'react';
 import { Table, Button } from 'react-bootstrap'
 
-const RouteTable = ({ format, perPage = 25, routes }) => {
-  const [rowCount, setRowCount] = useState(0)
-  const rowsToShow = routes.slice(rowCount, rowCount + 26)
+const RouteTable = ({
+  columns = [{ name: "header", property: "value" }],
+  rows = [{ id: 1, value: "cell" }],
+  format = (_, value) => value,
+  perPage = 25,
+  className = "table"
+}) => {
+  const [page, setPage] = useState(0)
 
-  const handlePrevBtn = (e) => {
-    if (rowCount - perPage < 0) return
-    setRowCount(rowCount - perPage)
+  const nextPage = (event) => {
+    event.preventDefault()
+    setPage(page + 1)
   }
 
-  const handleNextBtn = (e) => {
-    if (rowCount + perPage >= 850) return
-    setRowCount(rowCount + perPage)
+  const previousPage = (event) => {
+    event.preventDefault()
+    setPage(page - 1)
   }
 
+  const headerCells = columns.map((col) => {
+    return <th key={col.name}>{col.name}</th>
+  })
+
+  const start = page * perPage
+
+  const bodyRows = rows.slice(start, start + perPage).map((row) => {
+    const rows = columns.map((col) => {
+      const value = row[col.property]
+      return <td key={col.property + value}>{format(col.property, value)}</td>
+    })
+    return <tr key={Object.values(row).join(":")}>{rows}</tr>
+  })
+ 
   return (
-    <>
-      <Table striped>
+    <div>
+      <Table striped className={className}>
         <thead>
-          <tr>
-            <th>Airline</th>
-            <th>Source Airport</th>
-            <th>Destination Airport</th>
-          </tr>
+          <tr>{headerCells}</tr>
         </thead> 
-        <tbody>
-          {rowsToShow.map((route, idx) => {
-            const airline = format('airline', route.airline)
-            const sourceAirport = format('airport', route.src)
-            const destinationAirport = format('airport', route.dest)
-            return (
-              <tr key={idx}>
-                <td>
-                  {airline}
-                </td>
-                <td>
-                  {sourceAirport}
-                </td>
-                <td>
-                  {destinationAirport}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
+        <tbody>{bodyRows}</tbody>
       </Table>
-      <footer>
-        <Button variant="outline-secondary" disabled={rowCount - perPage < 0} size="sm" onClick={handlePrevBtn}>Previous</Button>
-        <p>Showing {rowCount + 1} - {rowCount + perPage} routes of {routes.length} routes</p>
-        <Button variant="outline-secondary" disabled={rowCount + perPage >= routes.length} size="sm" onClick={handleNextBtn}>Next</Button>
-      </footer>
-    </>
+      <div className="nav">
+        <p>Showing {start + 1}-{start + bodyRows.length} of {rows.length} routes</p>
+        <p>
+          <Button 
+            variant="outline-secondary" 
+            disabled={page === 0} 
+            size="sm" 
+            onClick={previousPage}>
+            Previous Page
+          </Button>
+          <Button 
+            variant="outline-secondary" 
+            disabled={start + perPage >= rows.length} 
+            size="sm" 
+            onClick={nextPage}>
+            Next Page
+          </Button>
+        </p>
+      </div>
+    </div>
   )
 }
 

@@ -1,64 +1,38 @@
 import React from 'react';
-import DATA from '../data'
-import { Button } from 'react-bootstrap'
 
-const Select = ({ selectChange, routes, resetFilter, airline, airport }) => {
-  let filteredCodes = []
-  let filteredIds = []
-
-  const airlineIds = routes.map(route => route.airline)
-  
-  airlineIds.forEach(id => {
-    if (!filteredIds.includes(id)) {
-      filteredIds.push(id)
-    }
-  })
-
-  const airportCodes = routes.map(route => [route.dest, route.src])
-
-  airportCodes.forEach(arr => {
-    if (!filteredCodes.includes(arr[0])) {
-      filteredCodes.push(arr[0])
-    }
-
-    if (!filteredCodes.includes(arr[1])) {
-      filteredCodes.push(arr[1])
-    }
-  })
-
-  const handleReset = (e) => {
-    filteredCodes = []
-    filteredIds = []
-    resetFilter()
+const Select = ({ 
+  options = [],
+  valueKey = "",
+  titleKey = "",
+  value = "all",
+  allTitle = "all",
+  onSelect = (_) => null,
+  enabledKey = undefined
+}) => {
+  const handleChange = (e) => {
+    e.preventDefault()
+    onSelect(e.target.value)
   }
 
-  const defaultSelected = airport === 'all' && airline === 'all'
+  let optionElements = options.map((option) => {
+    const value = option[valueKey]
+    const enabled = enabledKey === undefined || !!option[enabledKey]
+    return (
+      <option key={value} value={value} disabled={!enabled}>
+        {option[titleKey]}
+      </option>
+    )
+  })
+  optionElements.unshift(
+    <option key="all" value="all">
+      {allTitle}
+    </option>
+  )
 
   return (
-    <div>
-        Show Routes on 
-        <select id="airlines" onChange={selectChange}>
-          <option value="all" selected={airline === 'all'}>All Airlines</option>
-          {DATA.airlines.map(airline => {
-            return <option key={airline.id} value={airline.id} disabled={!filteredIds.includes(airline.id)}>
-                    {airline.name}
-                  </option>
-          })}
-        </select>
-
-        flying in or out of 
-
-        <select id="airports" onChange={selectChange}>
-          <option value='all' selected={airport === 'all'}>All Airports</option>
-          {DATA.airports.map(airport => {
-            return <option key={airport.code} value={airport.code} 
-                      disabled={!filteredCodes.includes(airport.code)}>
-                        {airport.name}
-                     </option>
-          })}
-        </select>
-        <Button variant="outline-secondary" size="sm" onClick={handleReset} disabled={defaultSelected}>Show All Routes</Button>
-    </div>
+    <select value={value} onChange={handleChange}>
+      {optionElements}
+    </select>
   )
 }
 

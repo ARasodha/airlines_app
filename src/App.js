@@ -2,53 +2,69 @@ import React, { useState } from 'react';
 import './App.css';
 import RouteTable from './components/RouteTable'
 import Select from './components/Select'
+import Map from './components/Map'
 import DATA from './data'
+import { Button } from 'react-bootstrap'
 
-const columns = [
-  {name: 'Airline', property: 'airline'},
-  {name: 'Source Airport', property: 'src'},
-  {name: 'Destination Airport', property: 'dest'},
-];
-
-function formatValue(property, value) { 
-  if (property === "airline") {
-    return DATA.getAirlineById(value).name
-  } else {
-    return DATA.getAirportByCode(value).name
-  }
-}
 
 const App = () => {
-  const [routes, setRoutes] = useState(DATA.routes)
   const [airline, setAirline] = useState('all')
   const [airport, setAirport] = useState('all')
-  console.log(airport)
-  console.log(airline)
-  const selectChange = (e) => {
-    const airlineId = document.getElementById('airlines').value
-    const airportCode = document.getElementById('airports').value
-    setAirline(airlineId)
-    setAirport(airportCode)
-
-    if (airline === 'all' && airport === 'all') {
-      setRoutes(DATA.routes)
-    } else if (airline === 'all') {
-      setRoutes(DATA.routes.filter(route => route.dest === airport || route.src === airport))
-    } else if (airport === 'all') {
-      setRoutes(DATA.routes.filter(route => route.airline === Number(airline)))
+ 
+  const formatValue = (property, value) => { 
+    if (property === "airline") {
+      return DATA.getAirlineById(value).name
     } else {
-      setRoutes(DATA.routes.filter(route => route.airline === Number(airline) 
-                && (route.dest === airport || route.src === airport)))
+      return DATA.getAirportByCode(value).name
     }
   }
 
-  const resetFilter = () => {
-    setRoutes(DATA.routes)
-    setAirline('all')
-    setAirport('all')
+  const airlineSelected = (value) => {
+    if (value !== 'all') {
+      value = parseInt(value, 10)
+    }
+    console.log('airlineselcted:', value)
+    setAirline(value)
   }
 
+  const airportSelected = (value) => {
+    console.log('airportselcted:', value)
+    setAirport(value)
+  }
 
+  const clearFilters = () => {
+    setAirline("all")
+    setAirport("all")
+  }
+
+  const columns = [
+    {name: 'Airline', property: 'airline'},
+    {name: 'Source Airport', property: 'src'},
+    {name: 'Destination Airport', property: 'dest'},
+  ];
+
+  const filteredRoutes = DATA.routes.filter((route) => {
+    return (
+      (route.airline === airline || airline === 'all') &&
+      (route.src === airport || route.dest === airport || airport === 'all')
+    )
+  })
+
+  const filteredAirlines = DATA.airlines.map((airline) => {
+    const active = !!filteredRoutes.find(
+      (route) => route.airline === airline.id
+    )
+    return Object.assign({}, airline, { active })
+  })
+
+  const filteredAirports = DATA.airports.map((airport) => {
+    const active = !!filteredRoutes.find(
+      (route) => route.src === airport.code || route.dest === airport.code
+    )
+    return Object.assign({}, airport, { active })
+  })
+
+  const defaultSelected = airline === "all" && airport === "all"
 
   return (
     <div className="app">
@@ -56,9 +72,38 @@ const App = () => {
       <h1 className="title">Airline Routes</h1>
     </header>
     <section>
-      <Select selectChange={selectChange} routes={routes} resetFilter={resetFilter} airline={airline} airport={airport} />
+      <Map routes={filteredRoutes} />
+      <p>Show routes on 
+        <Select
+          options={filteredAirlines}
+          valueKey="id"
+          titleKey="name"
+          enabledKey="active"
+          allTitle="All Airlines"
+          value={airline}
+          onSelect={airlineSelected}
+        />
+        flying in or out of
+        <Select
+          options={filteredAirports}
+          valueKey="code"
+          titleKey="name"
+          enabledKey="active"
+          allTitle="All Airports"
+          value={airport}
+          onSelect={airportSelected}
+        />
+        <Button onClick={clearFilters} disabled={defaultSelected} size="sm" variant="outline-secondary">
+          Show All Routes
+        </Button>
+      </p>
+
     </section>
-    <RouteTable className="routes-table" routes={routes} columns={columns} rows="" format={formatValue} />
+    <RouteTable 
+      className="routes-table" 
+      columns={columns} 
+      rows={filteredRoutes}
+      format={formatValue} />
   </div>
   )
 }
